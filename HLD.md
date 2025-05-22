@@ -1,0 +1,3 @@
+## High-Level Design
+
+This document explains the overall architecture...
