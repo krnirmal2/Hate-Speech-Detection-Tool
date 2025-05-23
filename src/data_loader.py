@@ -12,7 +12,7 @@ def load_data(file_path: str) -> pd.DataFrame:
     Returns:
         pd.DataFrame: Cleaned tweet data
     """
-    df = pd.read_csv(file_path)
+    df = pd.read_csv("E:\cursorAi\PYTHON\Hate-Speech-Detection-Tool\tweets_1.csv")
 
     # Drop rows with missing or empty username/text
     df.dropna(subset=["username", "text"], inplace=True)
