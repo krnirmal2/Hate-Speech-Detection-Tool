@@ -11,7 +11,7 @@ import time
 
 def load_sample_tweets(file_path="data/tweets_1.csv"):
     df = pd.read_csv(file_path)
-    df = df.dropna(subset=["username", "text"])
+    df = df.dropna(subset=["username", "tweets"])
     return df.to_dict(orient="records")
 
 def send_to_kafka():

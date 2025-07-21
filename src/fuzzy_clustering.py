@@ -39,7 +39,7 @@ def perform_fuzzy_clustering(df: pd.DataFrame, num_clusters: int = 3):
     # Normalize input features
     sentiment = normalize_series(df['sentiment_score'])
     centrality = normalize_series(df['eigenvector_centrality'])
-    followers = normalize_series(df['followers_count'])
+    followers = normalize_series(df['followers'])
 
     # Combine all features into a 2D array
     data = np.vstack([sentiment, centrality, followers])

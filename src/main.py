@@ -46,16 +46,18 @@ from src.text_preprocessing import analyze_sentiment_bert
 from src.graph_analysis import build_social_graph, compute_centrality_metrics
 from src.fuzzy_clustering import perform_fuzzy_clustering, visualize_clusters
 from src.database import save_users_to_db
-
+from pathlib import Path
 import pandas as pd
 
 # === Step 1: Load Data ===
 print("📥 Loading dataset...")
-df = load_data("data/tweets_1.csv")
+csv_path = Path("data") / "twitter_sentiment_analysis.csv"
+df = load_data(str(csv_path))
+# df = load_data(r"E:\cursorAi\PYTHON\Hate-Speech-Detection-Tool\data\tweets_1.csv")
 
 # === Step 2: Sentiment Analysis ===
 print("🧠 Performing sentiment analysis with BERT...")
-df["sentiment_score"] = df["text"].apply(analyze_sentiment_bert)
+df["sentiment_score"] = df["tweets"].apply(analyze_sentiment_bert)
 
 # === Step 3: Build Graph & Compute Centrality ===
 print("🔗 Building social graph...")
@@ -68,7 +70,7 @@ df["eigenvector_centrality"] = df["username"].map(centrality_scores).fillna(0)
 
 # === Step 4: Clustering ===
 print("🧪 Performing fuzzy clustering...")
-df["followers_count"] = df["followers_count"].fillna(0)
+df["followers"] = df["followers"].fillna(0)
 cluster_labels, centers, fpc = perform_fuzzy_clustering(df)
 
 # Map cluster index to readable risk categories
@@ -78,7 +80,7 @@ df["risk_category"] = [label_map.get(label, "Unknown") for label in cluster_labe
 # === Step 5: Store in MongoDB ===
 print("💾 Saving classified users to MongoDB...")
 records = df.to_dict(orient="records")
-save_users_to_db(records)
+# save_users_to_db(records)
 
 # === Step 6: (Optional) Visualize ===
 print("📈 Visualizing clusters...")

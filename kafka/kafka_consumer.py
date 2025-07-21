@@ -1,5 +1,5 @@
 # Consumes Kafka tweets, processes them
-📄 Purpose:
+# 📄 Purpose:
 # Listens to the Kafka topic
 # Analyzes tweet → classifies → stores in MongoDB
 # kafka/kafka_consumer.py
@@ -25,9 +25,9 @@ for msg in consumer:
 
     row = {
         "username": tweet['username'],
-        "text": tweet['text'],
+        "tweets": tweet['text'],
         "sentiment_score": sentiment,
-        "followers_count": tweet.get('followers_count', 0),
+        "followers": tweet.get('followers', 0),
         "eigenvector_centrality": 0.5  # dummy or precomputed
     }
 

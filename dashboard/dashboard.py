@@ -41,9 +41,9 @@ st.bar_chart(risk_counts)
 
 # Influential Users
 st.subheader("🔥 Top Influential Users")
-top_users = data.sort_values("followers_count", ascending=False).head(10)
-st.table(top_users[["username", "followers_count", "risk_category"]])
+top_users = data.sort_values("followers", ascending=False).head(10)
+st.table(top_users[["username", "followers", "risk_category"]])
 
 # Display full records
 st.subheader("📝 All Processed Tweets")
-st.dataframe(data[["username", "text", "sentiment_score", "eigenvector_centrality", "risk_category"]])
+st.dataframe(data[["username", "tweets", "sentiment_score", "eigenvector_centrality", "risk_category"]])

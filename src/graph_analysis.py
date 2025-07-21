@@ -11,6 +11,7 @@
 
 import networkx as nx
 import pandas as pd
+import re
 
 def build_social_graph(df: pd.DataFrame) -> nx.DiGraph:
     """
@@ -26,14 +27,15 @@ def build_social_graph(df: pd.DataFrame) -> nx.DiGraph:
 
     for _, row in df.iterrows():
         user = row['username']
-        mentions = []
+        tweet = row.get('tweets', '') # <-- Add this line
 
-        if 'mentions' in row and isinstance(row['mentions'], str):
-            mentions = [m.strip() for m in row['mentions'].split(',') if m.strip()]
+        G.add_node(user)
 
-        # Add edges from user to mentioned users
-        for mentioned_user in mentions:
-            G.add_edge(user, mentioned_user)
+        if isinstance(tweet, str):
+            mentions = re.findall(r"@[\w_]+", tweet)  # Extract @mentions like @user_name
+            for mention in mentions:
+                mentioned_user = mention[1:]  # remove '@'
+                G.add_edge(user, mentioned_user)
 
     return G
 

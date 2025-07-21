@@ -4,7 +4,7 @@
 # Calls MongoDB module and NLP + clustering in real-time
 # src/api.py
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException # type: ignore
 from pydantic import BaseModel
 from typing import List
 from src.database import get_users_by_risk
@@ -18,7 +18,7 @@ app = FastAPI(title="Jihadist Risk Classifier API", version="1.0")
 
 # Mock user base to simulate influence score (used for real-time clustering)
 mock_data = pd.DataFrame([
-    {"username": "baseline_user", "text": "neutral tweet", "followers_count": 50,
+    {"username": "baseline_user", "tweets": "neutral tweet", "followers": 50,
      "sentiment_score": 0.0, "eigenvector_centrality": 0.1}
 ])
 
@@ -57,7 +57,7 @@ def classify_tweet(tweet: TweetInput):
         input_df = pd.DataFrame([{
             "sentiment_score": sentiment,
             "eigenvector_centrality": influence_score,
-            "followers_count": tweet.followers_count
+            "followers": tweet.followers
         }])
 
         cluster, _, _ = perform_fuzzy_clustering(input_df, num_clusters=3)
@@ -73,7 +73,7 @@ def classify_tweet(tweet: TweetInput):
             "username": tweet.username,
             "risk_category": predicted_risk,
             "sentiment_score": sentiment,
-            "followers_count": tweet.followers_count
+            "followers": tweet.followers
         }
 
     except Exception as e:
@@ -91,8 +91,8 @@ def classify_tweet(tweet: TweetInput):
 
 # {
 #   "username": "user123",
-#   "text": "Death to infidels #jihad",
-#   "followers_count": 1000
+#   ""tweets"": "Death to infidels #jihad",
+#   "followers": 1000
 # }
 
 

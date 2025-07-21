@@ -1,5 +1,5 @@
 # MongoDB operations
-📄 Purpose:
+# 📄 Purpose:
 # Establish connection to MongoDB
 # Insert records into a collection (users)
 # Fetch users by risk_category
@@ -37,7 +37,7 @@ def save_users_to_db(users: List[Dict], db_name: str = "jihadist_detection", col
     collection = db[collection_name]
 
     if users:
-        collection.insert_many(users)
+        # collection.insert_many(users)
         print(f"✅ Inserted {len(users)} users into DB.")
     else:
         print("⚠️ No users to insert.")
@@ -64,8 +64,8 @@ def get_users_by_risk(risk_level: str, db_name: str = "jihadist_detection", coll
 
 # {
 #   "username": "radical_guy123",
-#   "text": "We will rise soon. #Jihad",
-#   "followers_count": 950,
+#   "tweets": "We will rise soon. #Jihad",
+#   "followers": 950,
 #   "sentiment_score": -0.9,
 #   "eigenvector_centrality": 0.82,
 #   "risk_category": "High Risk"
