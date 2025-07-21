@@ -1,0 +1,262 @@
+diff --git a/dashboard/dashboard.py b/dashboard/dashboard.py
+index 8cc9552..4f62025 100644
+--- a/dashboard/dashboard.py
++++ b/dashboard/dashboard.py
+@@ -41,9 +41,9 @@ st.bar_chart(risk_counts)
+ 
+ # Influential Users
+ st.subheader("🔥 Top Influential Users")
+-top_users = data.sort_values("followers_count", ascending=False).head(10)
+-st.table(top_users[["username", "followers_count", "risk_category"]])
++top_users = data.sort_values("followers", ascending=False).head(10)
++st.table(top_users[["username", "followers", "risk_category"]])
+ 
+ # Display full records
+ st.subheader("📝 All Processed Tweets")
+-st.dataframe(data[["username", "text", "sentiment_score", "eigenvector_centrality", "risk_category"]])
++st.dataframe(data[["username", "tweets", "sentiment_score", "eigenvector_centrality", "risk_category"]])
+diff --git a/data/tweets_1.csv b/data/tweets_1.csv
+index 42e6414..c4146dd 100644
+--- a/data/tweets_1.csv
++++ b/data/tweets_1.csv
+@@ -1,4 +1,4 @@
+-name,username,description,location,followers,numberstatuses,time,tweets,
++name,username,text,location,followers,numberstatuses,time,tweets,
+ GunsandCoffee,GunsandCoffee70,ENGLISH TRANSLATIONS: http://t.co/QLdJ0ftews,,640,49,1/6/2015 21:07,ENGLISH TRANSLATION: 'A MESSAGE TO THE TRUTHFUL IN SYRIA - SHEIKH ABU MUHAMMED AL MAQDISI: http://t.co/73xFszsjvr http://t.co/x8BZcscXzq
+ GunsandCoffee,GunsandCoffee70,ENGLISH TRANSLATIONS: http://t.co/QLdJ0ftews,,640,49,1/6/2015 21:27,"ENGLISH TRANSLATION: SHEIKH FATIH AL JAWLANI 'FOR THE PEOPLE OF INTEGRITY, SACRIFICE IS  EASY' http://t.co/uqqzXGgVTz http://t.co/A7nbjwyHBr"
+ GunsandCoffee,GunsandCoffee70,ENGLISH TRANSLATIONS: http://t.co/QLdJ0ftews,,640,49,1/6/2015 21:29,ENGLISH TRANSLATION: FIRST AUDIO MEETING WITH SHEIKH FATIH AL JAWLANI (HA): http://t.co/TgXT1GdGw7 http://t.co/ZuE8eisze6
+diff --git a/kafka/kafka_consumer.py b/kafka/kafka_consumer.py
+index cceb0b8..e634d24 100644
+--- a/kafka/kafka_consumer.py
++++ b/kafka/kafka_consumer.py
+@@ -1,5 +1,5 @@
+ # Consumes Kafka tweets, processes them
+-📄 Purpose:
++# 📄 Purpose:
+ # Listens to the Kafka topic
+ # Analyzes tweet → classifies → stores in MongoDB
+ # kafka/kafka_consumer.py
+@@ -25,9 +25,9 @@ for msg in consumer:
+ 
+     row = {
+         "username": tweet['username'],
+-        "text": tweet['text'],
++        "tweets": tweet['text'],
+         "sentiment_score": sentiment,
+-        "followers_count": tweet.get('followers_count', 0),
++        "followers": tweet.get('followers', 0),
+         "eigenvector_centrality": 0.5  # dummy or precomputed
+     }
+ 
+diff --git a/kafka/kafka_producer.py b/kafka/kafka_producer.py
+index 3b57a50..49cd430 100644
+--- a/kafka/kafka_producer.py
++++ b/kafka/kafka_producer.py
+@@ -11,7 +11,7 @@ import time
+ 
+ def load_sample_tweets(file_path="data/tweets_1.csv"):
+     df = pd.read_csv(file_path)
+-    df = df.dropna(subset=["username", "text"])
++    df = df.dropna(subset=["username", "tweets"])
+     return df.to_dict(orient="records")
+ 
+ def send_to_kafka():
+diff --git a/src/api.py b/src/api.py
+index cdc088e..808f0b1 100644
+--- a/src/api.py
++++ b/src/api.py
+@@ -4,7 +4,7 @@
+ # Calls MongoDB module and NLP + clustering in real-time
+ # src/api.py
+ 
+-from fastapi import FastAPI, HTTPException
++from fastapi import FastAPI, HTTPException # type: ignore
+ from pydantic import BaseModel
+ from typing import List
+ from src.database import get_users_by_risk
+@@ -18,7 +18,7 @@ app = FastAPI(title="Jihadist Risk Classifier API", version="1.0")
+ 
+ # Mock user base to simulate influence score (used for real-time clustering)
+ mock_data = pd.DataFrame([
+-    {"username": "baseline_user", "text": "neutral tweet", "followers_count": 50,
++    {"username": "baseline_user", "tweets": "neutral tweet", "followers": 50,
+      "sentiment_score": 0.0, "eigenvector_centrality": 0.1}
+ ])
+ 
+@@ -57,7 +57,7 @@ def classify_tweet(tweet: TweetInput):
+         input_df = pd.DataFrame([{
+             "sentiment_score": sentiment,
+             "eigenvector_centrality": influence_score,
+-            "followers_count": tweet.followers_count
++            "followers": tweet.followers
+         }])
+ 
+         cluster, _, _ = perform_fuzzy_clustering(input_df, num_clusters=3)
+@@ -73,7 +73,7 @@ def classify_tweet(tweet: TweetInput):
+             "username": tweet.username,
+             "risk_category": predicted_risk,
+             "sentiment_score": sentiment,
+-            "followers_count": tweet.followers_count
++            "followers": tweet.followers
+         }
+ 
+     except Exception as e:
+@@ -91,8 +91,8 @@ def classify_tweet(tweet: TweetInput):
+ 
+ # {
+ #   "username": "user123",
+-#   "text": "Death to infidels #jihad",
+-#   "followers_count": 1000
++#   "followers": 1000
+ # }
+ 
+ 
+diff --git a/src/data_loader.py b/src/data_loader.py
+index 2137ec8..0a40859 100644
+--- a/src/data_loader.py
++++ b/src/data_loader.py
+@@ -12,13 +12,18 @@ def load_data(file_path: str) -> pd.DataFrame:
+     Returns:
+         pd.DataFrame: Cleaned tweet data
+     """
+-    df = pd.read_csv("E:\cursorAi\PYTHON\Hate-Speech-Detection-Tool\tweets_1.csv")
+-
++    df = pd.read_csv(
++        file_path,
++        engine="python",           # use Python engine (handles malformed CSV better)
++        on_bad_lines="skip",       # skip lines like row 337
++        quoting=1,                 # handle quoted strings safely
++        encoding="utf-8"
++    )
+     # Drop rows with missing or empty username/text
+-    df.dropna(subset=["username", "text"], inplace=True)
++    df.dropna(subset=["username", "tweets"], inplace=True)
+ 
+     # Remove retweets, duplicate entries
+-    df.drop_duplicates(subset=["username", "text"], inplace=True)
++    df.drop_duplicates(subset=["username", "tweets"], inplace=True)
+ 
+     # Remove bot-like users (e.g., usernames with @ symbols or repeated chars)
+     df = df[df['username'].str.contains('@') == False]
+diff --git a/src/database.py b/src/database.py
+index b19bc8a..3ca29ce 100644
+--- a/src/database.py
++++ b/src/database.py
+@@ -1,5 +1,5 @@
+ # MongoDB operations
+-📄 Purpose:
++# 📄 Purpose:
+ # Establish connection to MongoDB
+ # Insert records into a collection (users)
+ # Fetch users by risk_category
+@@ -37,7 +37,7 @@ def save_users_to_db(users: List[Dict], db_name: str = "jihadist_detection", col
+     collection = db[collection_name]
+ 
+     if users:
+-        collection.insert_many(users)
++        # collection.insert_many(users)
+         print(f"✅ Inserted {len(users)} users into DB.")
+     else:
+         print("⚠️ No users to insert.")
+@@ -64,8 +64,8 @@ def get_users_by_risk(risk_level: str, db_name: str = "jihadist_detection", coll
+ 
+ # {
+ #   "username": "radical_guy123",
+-#   "text": "We will rise soon. #Jihad",
+-#   "followers_count": 950,
++#   "tweets": "We will rise soon. #Jihad",
++#   "followers": 950,
+ #   "sentiment_score": -0.9,
+ #   "eigenvector_centrality": 0.82,
+ #   "risk_category": "High Risk"
+diff --git a/src/fuzzy_clustering.py b/src/fuzzy_clustering.py
+index 7525d5d..5cefd33 100644
+--- a/src/fuzzy_clustering.py
++++ b/src/fuzzy_clustering.py
+@@ -39,7 +39,7 @@ def perform_fuzzy_clustering(df: pd.DataFrame, num_clusters: int = 3):
+     # Normalize input features
+     sentiment = normalize_series(df['sentiment_score'])
+     centrality = normalize_series(df['eigenvector_centrality'])
+-    followers = normalize_series(df['followers_count'])
++    followers = normalize_series(df['followers'])
+ 
+     # Combine all features into a 2D array
+     data = np.vstack([sentiment, centrality, followers])
+diff --git a/src/graph_analysis.py b/src/graph_analysis.py
+index c8b9afe..2e7df5b 100644
+--- a/src/graph_analysis.py
++++ b/src/graph_analysis.py
+@@ -11,6 +11,7 @@
+ 
+ import networkx as nx
+ import pandas as pd
++import re
+ 
+ def build_social_graph(df: pd.DataFrame) -> nx.DiGraph:
+     """
+@@ -26,14 +27,15 @@ def build_social_graph(df: pd.DataFrame) -> nx.DiGraph:
+ 
+     for _, row in df.iterrows():
+         user = row['username']
+-        mentions = []
++        tweet = row.get('tweets', '') # <-- Add this line
+ 
+-        if 'mentions' in row and isinstance(row['mentions'], str):
+-            mentions = [m.strip() for m in row['mentions'].split(',') if m.strip()]
++        G.add_node(user)
+ 
+-        # Add edges from user to mentioned users
+-        for mentioned_user in mentions:
+-            G.add_edge(user, mentioned_user)
++        if isinstance(tweet, str):
++            mentions = re.findall(r"@[\w_]+", tweet)  # Extract @mentions like @user_name
++            for mention in mentions:
++                mentioned_user = mention[1:]  # remove '@'
++                G.add_edge(user, mentioned_user)
+ 
+     return G
+ 
+diff --git a/src/main.py b/src/main.py
+index 553498f..415fa33 100644
+--- a/src/main.py
++++ b/src/main.py
+@@ -46,16 +46,18 @@ from src.text_preprocessing import analyze_sentiment_bert
+ from src.graph_analysis import build_social_graph, compute_centrality_metrics
+ from src.fuzzy_clustering import perform_fuzzy_clustering, visualize_clusters
+ from src.database import save_users_to_db
+-
++from pathlib import Path
+ import pandas as pd
+ 
+ # === Step 1: Load Data ===
+ print("📥 Loading dataset...")
+-df = load_data("data/tweets_1.csv")
++csv_path = Path("data") / "twitter_sentiment_analysis.csv"
++df = load_data(str(csv_path))
++# df = load_data(r"E:\cursorAi\PYTHON\Hate-Speech-Detection-Tool\data\tweets_1.csv")
+ 
+ # === Step 2: Sentiment Analysis ===
+ print("🧠 Performing sentiment analysis with BERT...")
+-df["sentiment_score"] = df["text"].apply(analyze_sentiment_bert)
++df["sentiment_score"] = df["tweets"].apply(analyze_sentiment_bert)
+ 
+ # === Step 3: Build Graph & Compute Centrality ===
+ print("🔗 Building social graph...")
+@@ -68,7 +70,7 @@ df["eigenvector_centrality"] = df["username"].map(centrality_scores).fillna(0)
+ 
+ # === Step 4: Clustering ===
+ print("🧪 Performing fuzzy clustering...")
+-df["followers_count"] = df["followers_count"].fillna(0)
++df["followers"] = df["followers"].fillna(0)
+ cluster_labels, centers, fpc = perform_fuzzy_clustering(df)
+ 
+ # Map cluster index to readable risk categories
+@@ -78,7 +80,7 @@ df["risk_category"] = [label_map.get(label, "Unknown") for label in cluster_labe
+ # === Step 5: Store in MongoDB ===
+ print("💾 Saving classified users to MongoDB...")
+ records = df.to_dict(orient="records")
+-save_users_to_db(records)
++# save_users_to_db(records)
+ 
+ # === Step 6: (Optional) Visualize ===
+ print("📈 Visualizing clusters...")
