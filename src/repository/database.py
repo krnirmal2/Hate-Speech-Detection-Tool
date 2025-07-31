@@ -6,11 +6,13 @@
 
 # src/database.py
 
+import os
 from pymongo import MongoClient
 from typing import List, Dict
 
 
-def get_mongo_client(uri: str = "mongodb://localhost:27017/") -> MongoClient:
+def get_mongo_client() -> MongoClient:
+    uri = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
     """
     Establish MongoDB connection.
 
@@ -23,7 +25,11 @@ def get_mongo_client(uri: str = "mongodb://localhost:27017/") -> MongoClient:
     return MongoClient(uri)
 
 
-def save_users_to_db(users: List[Dict], db_name: str = "jihadist_detection", collection_name: str = "users"):
+def save_users_to_db(
+    users: List[Dict],
+    db_name: str = "local",
+    collection_name: str = "hate_speech_detection",
+):
     """
     Inserts user records into MongoDB collection.
 
@@ -37,13 +43,17 @@ def save_users_to_db(users: List[Dict], db_name: str = "jihadist_detection", col
     collection = db[collection_name]
 
     if users:
-        # collection.insert_many(users)
+        collection.insert_many(users)
         print(f"✅ Inserted {len(users)} users into DB.")
     else:
         print("⚠️ No users to insert.")
 
 
-def get_users_by_risk(risk_level: str, db_name: str = "jihadist_detection", collection_name: str = "users") -> List[Dict]:
+def get_users_by_risk(
+    risk_level: str,
+    db_name: str = "hate_speech_detection",
+    collection_name: str = "classified_users",
+) -> List[Dict]:
     """
     Fetches users from DB by risk category.
 
@@ -61,6 +71,7 @@ def get_users_by_risk(risk_level: str, db_name: str = "jihadist_detection", coll
 
     users = list(collection.find({"risk_category": risk_level}, {"_id": 0}))
     return users
+
 
 # {
 #   "username": "radical_guy123",

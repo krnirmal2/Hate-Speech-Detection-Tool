@@ -1,25 +1,31 @@
-# Kafka in Kubernetes
+# 🐳 Kafka Deployment in Kubernetes
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: kafka
+  name: kafka  # Name of the Kafka deployment
 spec:
-  replicas: 1
+  replicas: 1  # Number of Kafka pods to run (usually 1 in dev)
   selector:
     matchLabels:
-      app: kafka
+      app: kafka  # Ensures the pod matches the deployment selector
   template:
     metadata:
       labels:
-        app: kafka
+        app: kafka  # Pod label to match the selector above
     spec:
       containers:
         - name: kafka
-          image: wurstmeister/kafka
+          image: wurstmeister/kafka  # Kafka image to use
           ports:
-            - containerPort: 9092
+            - containerPort: 9092  # Kafka broker port inside container
           env:
             - name: KAFKA_ZOOKEEPER_CONNECT
-              value: zookeeper:2181
+              value: zookeeper:2181  # Zookeeper service URL (must be reachable inside cluster)
+
+            # 👇 Very important: KAFKA_ADVERTISED_LISTENERS should reflect the *external* service name or IP
+            # In Kubernetes, this often needs to be a NodePort/LoadBalancer or use headless services with DNS
             - name: KAFKA_ADVERTISED_LISTENERS
-              value: PLAINTEXT://kafka:9092
+              value: PLAINTEXT://kafka:9092  # Update this depending on how clients connect (external or internal)
+
+            # Optional but often needed to bind properly
+            - name: KAFKA_LI_

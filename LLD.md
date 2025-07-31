@@ -18,9 +18,11 @@
 - NetworkX Graph
 - Computes:
   - Eigenvector centrality
+  - Closeness centrality
+  - Betweenness centrality
   - Finds root propagator
 
-### `fuzzy_clustering.py`
+### `src/service/clusteringStrategy/fuzzy_clustering.py`
 - Normalizes features:
   - Sentiment
   - Centrality
@@ -29,27 +31,27 @@
 - Calculates FPC
 - Maps clusters → "High", "Medium", "Low Risk"
 
-### `database.py`
+### `src/repository/database.py`
 - Connects to MongoDB
 - Saves and queries user profiles
 
-### `api.py`
+### `src/controller/api.py`
 - FastAPI
 - Endpoints:
   - GET /users/{risk_category}
   - POST /analyze_tweet
 
-### `dashboard.py`
+### `src/dashboard/dashboard.py`
 - Streamlit
 - Plots:
   - Risk category distribution
   - Influencers
   - Recent tweets
 
-### `alerts.py`
+### `src/logs/alerts.py`
 - Kafka consumer
 - Email alert if high-risk tweet volume > threshold
 
-### `main.py`
+### `src/service/main.py`
 - Pipeline runner:
   - Load → Sentiment → Graph → Clustering → DB

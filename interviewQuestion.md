@@ -19,6 +19,83 @@ Perfect! Here's a tailored **Mock Interview Q\&A Guide** for your **Jihadist Det
 **A:**
 
 ```
+
+
+### 🔹 Q22: Can you explain the difference between eigenvector, closeness, and betweenness centrality?
+
+**A:**
+*   **Eigenvector Centrality:** Measures a node's influence based on its connections to other highly connected nodes. It's about "who you know" and how influential they are.
+*   **Closeness Centrality:** Measures how close a node is to all other nodes in the network. A node with high closeness can quickly interact with all other nodes.
+*   **Betweenness Centrality:** Measures the extent to which a node lies on the shortest paths between other nodes. Nodes with high betweenness act as "bridges" or "brokers" in the network.
+
+---
+
+### 🔹 Q23: How did you decide which centrality metrics to include in your model?
+
+**A:** We initially started with Eigenvector Centrality as it's a strong indicator of influence. However, to get a more comprehensive view of a user's role in the network, we added Closeness Centrality (for speed of information dissemination) and Betweenness Centrality (for control over information flow). Combining these gives a robust set of features for the clustering model.
+
+---
+
+### 🔹 Q24: What are the limitations of using follower count as a measure of influence?
+
+**A:** Follower count is a basic metric and can be misleading. It doesn't account for engagement, the quality of followers, or whether the followers are bots. A user with many inactive or bot followers might appear influential but have little real impact. Centrality measures provide a more nuanced understanding of actual network influence.
+
+---
+
+### 🔹 Q25: How do you handle missing or incomplete data in the social graph analysis?
+
+**A:** Missing data can significantly impact graph analysis. In our system, we handle it by:
+*   **Initial Cleaning:** Dropping rows with critical missing data during the data loading phase.
+*   **Imputation/Approximation:** For specific graph features, if a node has incomplete connection data, we might approximate its centrality based on available sub-graphs or exclude it from certain calculations if the impact is minimal.
+*   **Robustness Checks:** Ensuring our centrality algorithms are robust to sparse graphs by carefully handling disconnected components, or by considering alternative graph metrics that are less sensitive to missing links.
+
+---
+
+### 🔹 Q26: Can you elaborate on how the 'engagement' feature is calculated and its role in the clustering?
+
+**A:** Engagement is calculated based on metrics like retweets, likes, and replies received by a user's tweets. It indicates how much interaction a user's content generates, reflecting their active reach and influence beyond just follower count. In the clustering model, higher engagement often correlates with more active and potentially influential users, providing another dimension to assess their risk profile.
+
+---
+
+### 🔹 Q27: How do you ensure the real-time classification in `/analyze_tweet` is efficient and accurate?
+
+**A:** For efficiency, the `/analyze_tweet` endpoint uses a pre-loaded BERT model for sentiment analysis and pre-trained fuzzy clustering models. This minimizes latency as there's no model loading on each request. For accuracy, the clustering model is trained on a comprehensive dataset, and while the influence score is mocked for a single tweet, in a full pipeline it would integrate with the dynamically updated social graph. Continuous monitoring and retraining are crucial for maintaining accuracy.
+
+---
+
+### 🔹 Q28: How does the system handle concept drift, especially with evolving extremist language?
+
+**A:** Concept drift is a significant challenge. We address it by:
+*   **Regular Retraining:** Periodically retraining the BERT sentiment model and fuzzy clustering models with updated, freshly labeled data that reflects current extremist language trends.
+*   **Monitoring Performance:** Continuously monitoring the performance of the classification models in production (e.g., using FPC, silhouette scores, or human review of flagged tweets) to detect degradation.
+*   **Feedback Loops:** Implementing a feedback mechanism where human analysts can correct misclassifications, which then feeds into the retraining dataset.
+*   **Adaptive Models:** Exploring adaptive clustering algorithms or incremental learning techniques that can adjust to new patterns without full retraining.
+
+---
+
+### 🔹 Q29: What are the trade-offs between using a pre-trained sentiment model (like BERT) and training a custom one from scratch?
+
+**A:**
+*   **Pre-trained (BERT):**
+    *   **Pros:** Faster development, requires less data, leverages vast general knowledge, often good baseline performance.
+    *   **Cons:** Might not be perfectly optimized for domain-specific nuances (e.g., extremist language), can be larger and slower for real-time inference if not optimized.
+*   **Custom (from scratch):**
+    *   **Pros:** Highly optimized for specific domain, potentially better accuracy with sufficient, high-quality domain data.
+    *   **Cons:** Requires significant labeled data, long training times, computationally expensive, prone to overfitting if data is limited.
+
+For this project, starting with a fine-tuned pre-trained BERT was efficient, with future plans for domain-specific fine-tuning if necessary.
+
+---
+
+### 🔹 Q30: How would you extend this system to detect emerging threats or new extremist groups not covered in the initial training data?
+
+**A:** Extending to new threats involves:
+*   **Active Learning:** A human-in-the-loop system where the model flags uncertain tweets for review, and the annotations are used for retraining.
+*   **Anomaly Detection:** Implementing anomaly detection techniques on user behavior or linguistic patterns to identify deviations from known extremist profiles.
+*   **Topic Modeling/Embeddings:** Using dynamic topic modeling (e.g., LDA, BERTopic) or continuously updated word/sentence embeddings to identify new themes or terminologies.
+*   **External Data Integration:** Incorporating intelligence from external threat intelligence feeds or research on emerging extremist narratives to enrich the training data and rules.
+
+---
 Twitter API → BERT Sentiment → Graph Centrality → Fuzzy Clustering → MongoDB → FastAPI + Streamlit + Kafka Alerts
 ```
 

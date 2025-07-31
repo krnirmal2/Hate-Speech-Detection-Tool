@@ -18,7 +18,7 @@
 
 3. **Graph Builder**
    - Mentions → NetworkX graph
-   - Centrality score = Influence
+   - Centrality score = Eigenvector, Closeness, Betweenness (Influence)
 
 4. **Clustering Engine**
    - Fuzzy C-Means

@@ -12,23 +12,23 @@ from src.database import save_users_to_db
 from src.fuzzy_clustering import perform_fuzzy_clustering
 
 consumer = KafkaConsumer(
-    'twitter_stream',
-    bootstrap_servers='localhost:9092',
-    value_deserializer=lambda m: json.loads(m.decode('utf-8'))
+    "twitter_stream",
+    bootstrap_servers="localhost:9092",
+    value_deserializer=lambda m: json.loads(m.decode("utf-8")),
 )
 
 batch = []
 
 for msg in consumer:
     tweet = msg.value
-    sentiment = analyze_sentiment_bert(tweet['text'])
+    sentiment = analyze_sentiment_bert(tweet["text"])
 
     row = {
-        "username": tweet['username'],
-        "tweets": tweet['text'],
+        "username": tweet["username"],
+        "tweets": tweet["text"],
         "sentiment_score": sentiment,
-        "followers": tweet.get('followers', 0),
-        "eigenvector_centrality": 0.5  # dummy or precomputed
+        "followers": tweet.get("followers", 0),
+        "eigenvector_centrality": 0.5,  # dummy or precomputed
     }
 
     batch.append(row)
