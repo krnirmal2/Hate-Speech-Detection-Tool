@@ -14,16 +14,17 @@ import smtplib
 import time
 
 # Alert Configuration
-THRESHOLD = 5        # Number of high-risk tweets
-TIME_WINDOW = 60     # Seconds
-EMAIL_FROM = "your_email@gmail.com"
-EMAIL_TO = "security_team@example.com"
-EMAIL_PASSWORD = "your_app_password"  # Use app password if using Gmail
+THRESHOLD = 5  # Number of high-risk tweets
+TIME_WINDOW = 60  # Seconds
+EMAIL_FROM = "nirmalkrmajhi@gmail.com"
+EMAIL_TO = "nirmalkrmajhi@gmail.com"
+EMAIL_PASSWORD = ""  # Use app password if using Gmail
+
 
 # SMTP Setup
 def send_email_alert(message: str):
     try:
-        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server = smtplib.SMTP("smtp.gmail.com", 587)
         server.starttls()
         server.login(EMAIL_FROM, EMAIL_PASSWORD)
 
@@ -36,11 +37,12 @@ def send_email_alert(message: str):
     except Exception as e:
         print(f"❌ Failed to send alert: {e}")
 
+
 # Kafka Consumer Setup
 consumer = KafkaConsumer(
-    'twitter_stream',
-    bootstrap_servers='localhost:9092',
-    value_deserializer=lambda m: json.loads(m.decode('utf-8'))
+    "twitter_stream",
+    bootstrap_servers="localhost:9092",
+    value_deserializer=lambda m: json.loads(m.decode("utf-8")),
 )
 
 # Monitoring Loop
@@ -60,12 +62,14 @@ for msg in consumer:
     # Check time window
     if time.time() - start_time >= TIME_WINDOW:
         if high_risk_counter >= THRESHOLD:
-            send_email_alert(f"{high_risk_counter} high-risk tweets detected in {TIME_WINDOW} seconds!")
+            send_email_alert(
+                f"{high_risk_counter} high-risk tweets detected in {TIME_WINDOW} seconds!"
+            )
         # Reset counters
         high_risk_counter = 0
         start_time = time.time()
 
-        
+
 # | Component            | Description                            |
 # | -------------------- | -------------------------------------- |
 # | `KafkaConsumer`      | Listens to topic with real-time tweets |

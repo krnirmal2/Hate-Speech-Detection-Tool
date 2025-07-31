@@ -4,7 +4,7 @@
 # Calls MongoDB module and NLP + clustering in real-time
 # src/api.py
 
-from fastapi import FastAPI, HTTPException # type: ignore
+from fastapi import FastAPI, HTTPException  # type: ignore
 from pydantic import BaseModel
 from typing import List
 from src.database import get_users_by_risk
@@ -17,10 +17,18 @@ import uvicorn
 app = FastAPI(title="Jihadist Risk Classifier API", version="1.0")
 
 # Mock user base to simulate influence score (used for real-time clustering)
-mock_data = pd.DataFrame([
-    {"username": "baseline_user", "tweets": "neutral tweet", "followers": 50,
-     "sentiment_score": 0.0, "eigenvector_centrality": 0.1}
-])
+mock_data = pd.DataFrame(
+    [
+        {
+            "username": "baseline_user",
+            "tweets": "neutral tweet",
+            "followers": 50,
+            "sentiment_score": 0.0,
+            "eigenvector_centrality": 0.1,
+        }
+    ]
+)
+
 
 # Request Model
 class TweetInput(BaseModel):
@@ -54,26 +62,26 @@ def classify_tweet(tweet: TweetInput):
         influence_score = 0.5  # Placeholder (could be from dynamic NetworkX update)
 
         # Step 3: Prepare data for clustering
-        input_df = pd.DataFrame([{
-            "sentiment_score": sentiment,
-            "eigenvector_centrality": influence_score,
-            "followers": tweet.followers
-        }])
+        input_df = pd.DataFrame(
+            [
+                {
+                    "sentiment_score": sentiment,
+                    "eigenvector_centrality": influence_score,
+                    "followers": tweet.followers,
+                }
+            ]
+        )
 
         cluster, _, _ = perform_fuzzy_clustering(input_df, num_clusters=3)
 
-        label_map = {
-            0: "Low Risk",
-            1: "Medium Risk",
-            2: "High Risk"
-        }
+        label_map = {0: "Low Risk", 1: "Medium Risk", 2: "High Risk"}
         predicted_risk = label_map.get(cluster[0], "Unknown")
 
         return {
             "username": tweet.username,
             "risk_category": predicted_risk,
             "sentiment_score": sentiment,
-            "followers": tweet.followers
+            "followers": tweet.followers,
         }
 
     except Exception as e:
@@ -94,6 +102,3 @@ def classify_tweet(tweet: TweetInput):
 #   ""tweets"": "Death to infidels #jihad",
 #   "followers": 1000
 # }
-
-
-

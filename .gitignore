@@ -1,3 +1,21 @@
 venv/
 .venv/
-tests/ 
+
+
+# Python
+__pycache__/
+*.pyc
+*.log
+*.env
+*.env.*
+
+# IDEs
+.vscode/
+.idea/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+
+# Output and temporary files
+output.log

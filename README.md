@@ -2,6 +2,9 @@
 
 This system detects jihadist/extremist activity on Twitter using advanced AI, graph theory, and fuzzy clustering techniques.
 
+### Distinguishing Dangerous Users
+The system employs Gustafson-Kessel fuzzy clustering to categorize users. This clustering process groups users based on their textual content and social graph interactions, allowing for the identification of potential "dangerous users" who may be spreading harmful or malicious content. The classified users are then saved to MongoDB for further analysis and monitoring.
+
 ---
 
 ## 📌 Key Features
@@ -18,22 +21,7 @@ This system detects jihadist/extremist activity on Twitter using advanced AI, gr
 
 ---
 
-## 🚀 How to Run
 
-```bash
-# 1. Install dependencies
-pip install -r requirements.txt
-
-# 2. Run core pipeline
-python main.py
-
-# 3. Start the API
-uvicorn src.api:app --reload
-
-# 4. Launch Dashboard
-streamlit run dashboard/dashboard.py
-
-```
 
 ## Features
 
@@ -55,8 +43,9 @@ streamlit run dashboard/dashboard.py
 - MongoDB
 - Kafka
 
-## Installation
 
+
+## Clone repo
 1. Clone the repository:
 ```bash
 git clone https://github.com/yourusername/hate-speech-detection-tool.git
@@ -74,6 +63,48 @@ cp .env.example .env
 docker-compose up --build
 ```
 
+## 1. How to Install
+
+```bash
+pip install -r requirements.txt
+
+# Install code formatter
+pip install black
+```
+
+## 2. Code Formatting
+
+Format all Python files using Black:
+```bash
+black .
+```
+
+Format specific directory:
+```bash
+black src/
+```
+
+## 2. 🚀 How to Run
+
+### 1. Main Analysis Pipeline
+```bash
+python src/service/main.py
+```
+
+### 2. Dashboard result from database after running main pipeline
+```bash
+streamlit run src/dashboard/dashboard.py
+```
+
+### 3. API Endpoints
+```bash
+# Start API
+python src/controller/api.py
+
+# Test detection endpoint
+curl -X POST -H "Content-Type: application/json" -d @data/test.json http://localhost:5000/api/detect
+```
+
 ## Usage
 
 - FastAPI backend: http://localhost:8000
@@ -86,23 +117,35 @@ docker-compose up --build
 ```
 hate-speech-detection-tool/
 ├── src/
-│   ├── api.py              # FastAPI endpoints
-│   ├── config.py           # Configuration
-│   ├── dashboard.py        # Streamlit dashboard
-│   ├── database.py         # MongoDB operations
-│   ├── fuzzy_clustering.py # Fuzzy C-means clustering
-│   ├── graph_analysis.py   # Network analysis
-│   ├── logger.py           # Logging setup
-│   ├── monitoring.py       # Prometheus metrics
-│   ├── stream_processor.py # Kafka stream processing
-│   └── text_preprocessing.py # BERT sentiment analysis
+│   ├── config/             # Configuration files
+│   │   └── config.py
+│   ├── controller/         # FastAPI endpoints
+│   │   └── api.py
+│   ├── dashboard/          # Streamlit dashboard
+│   │   └── dashboard.py
+│   ├── data/               # Data directory
+│   │   └── twitter_sentiment_analysis.csv
+│   ├── kafka/              # Kafka producers and consumers
+│   │   ├── kafka_consumer.py
+│   │   └── kafka_producer.py
+│   ├── logs/               # Logging and monitoring
+│   │   ├── alerts.py
+│   │   ├── logger.py
+│   │   └── monitoring.py
+│   ├── models/             # Model files
+│   ├── repository/         # Database operations
+│   │   └── database.py
+│   ├── service/            # Core business logic
+│   │   ├── clusteringStrategy/ # Fuzzy Clustering implementations
+│   │   │   └── fuzzy_clustering.py
+│   │   ├── data_loader.py  # Data loading and cleaning
+│   │   ├── graph_analysis.py # NetworkX social graph logic
+│   │   ├── main.py         # Main pipeline script
+│   │   ├── stream_processor.py # Kafka stream processing
+│   │   └── text_preprocessing.py # BERT sentiment analysis
+├── deployment/             # Docker and Kubernetes deployment files
+├── oldCode/                # Older code versions
 ├── tests/                  # Test suite
-├── data/                   # Data directory
-├── models/                 # Model files
-├── logs/                   # Log files
-├── Dockerfile
-├── docker-compose.yml
-├── prometheus.yml
 ├── requirements.txt
 └── README.md
 ```
@@ -245,23 +288,7 @@ Visualization	Matplotlib, Seaborn
 	• Extend the methodology to fake news detection, cybercrime tracking, or child exploitation detection.
 
 6. Interview Questions
-Basic Questions
-	1. What was the main objective of your project?
-	2. Why did you choose Twitter as the primary data source?
-	3. What challenges did you face in collecting and processing data?
-Big Data & Graph Theory
-	4. How does Graph Theory help in social network analysis?
-	5. What is Betweenness Centrality, and why is it useful in this project?
-	6. How did you handle real-time streaming data from Twitter?
-Machine Learning & Fuzzy Clustering
-	7. Why did you use Fuzzy C-Means instead of K-Means?
-	8. What is the difference between Mahalanobis & Euclidean distance?
-	9. How did you validate the optimal number of clusters?
-Security & Real-World Applications
-	10. How can this project be extended to financial fraud detection?
-	11. What are some ethical concerns when tracking users online?
-How would you implement this system in a government security agency?
+
 
 ## License
-
 This project is licensed under the MIT License - see the LICENSE file for details.

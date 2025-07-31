@@ -9,23 +9,26 @@ import pandas as pd
 import json
 import time
 
+
 def load_sample_tweets(file_path="data/tweets_1.csv"):
     df = pd.read_csv(file_path)
     df = df.dropna(subset=["username", "tweets"])
     return df.to_dict(orient="records")
 
+
 def send_to_kafka():
     producer = KafkaProducer(
-        bootstrap_servers='localhost:9092',
-        value_serializer=lambda x: json.dumps(x).encode('utf-8')
+        bootstrap_servers="localhost:9092",
+        value_serializer=lambda x: json.dumps(x).encode("utf-8"),
     )
 
     tweets = load_sample_tweets()
 
     for tweet in tweets:
-        producer.send('twitter_stream', value=tweet)
+        producer.send("twitter_stream", value=tweet)
         print(f"✅ Tweet sent: {tweet['username']}")
         time.sleep(1)
+
 
 if __name__ == "__main__":
     send_to_kafka()

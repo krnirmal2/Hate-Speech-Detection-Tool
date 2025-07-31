@@ -29,23 +29,23 @@
 
 ## 3️⃣ **Modules and Their Responsibilities**
 
-### `data_loader.py`
+### `src/service/data_loader.py`
 
 * Loads tweets from CSV or Twitter API
 * Removes bots, NaNs, and duplicate entries
 
-### `text_preprocessing.py`
+### `src/service/text_preprocessing.py`
 
 * Uses pretrained BERT (`nlptown`) to classify tweet sentiment (1–5 stars)
 * Converts sentiment to score between -1 and +1
 
-### `graph_analysis.py`
+### `src/service/graph_analysis.py`
 
 * Builds social graph from tweet mentions
 * Computes centrality (Eigenvector, Betweenness, Degree)
 * Detects root propagator (first influencer)
 
-### `fuzzy_clustering.py`
+### `src/service/clusteringStrategy/fuzzy_clustering.py`
 
 * Uses `sentiment_score`, `eigenvector_centrality`, `followers_count`
 * Applies **Fuzzy C-Means** and **Gustafson-Kessel** (adaptive clustering)
@@ -55,19 +55,19 @@
   * Fuzzy Partition Coefficient (FPC)
   * Risk label: Low, Medium, High
 
-### `database.py`
+### `src/repository/database.py`
 
 * Connects to MongoDB (`localhost:27017`)
 * Saves and queries user data by risk level
 
-### `api.py`
+### `src/controller/api.py`
 
 * FastAPI Endpoints:
 
   * `GET /users/{risk_category}`
   * `POST /analyze_tweet`
 
-### `dashboard.py`
+### `src/dashboard/dashboard.py`
 
 * Live Streamlit UI
 * Shows:
@@ -76,12 +76,12 @@
   * Top influencers
   * Recent classified tweets
 
-### `alerts.py`
+### `src/logs/alerts.py`
 
 * Kafka consumer
 * Sends SMTP email when extremist tweet count exceeds threshold in a time window
 
-### `main.py`
+### `src/service/main.py`
 
 * Integrates all steps:
 

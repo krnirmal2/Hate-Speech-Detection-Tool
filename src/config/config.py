@@ -45,4 +45,4 @@ ALERT_SLACK_WEBHOOK = os.getenv("ALERT_SLACK_WEBHOOK")
 
 # Logging Configuration
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
-LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s" 
+LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
